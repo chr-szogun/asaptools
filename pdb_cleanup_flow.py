@@ -155,7 +155,7 @@ class SDF_writer():
 
 
 os.chdir(args.pathtopdbs)
-complex_aligner()
+complex_aligner(args.ref)
 LigBondOrder_fixer()
-protein_prep()
+protein_prep(args.ref)
 SDF_writer()
