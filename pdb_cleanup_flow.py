@@ -154,7 +154,7 @@ class SDF_writer():
             [s.write(sdf) for sdf in sdfs]
 
 
-os.chdir(args.path)
+os.chdir(args.pathtopdbs)
 complex_aligner()
 LigBondOrder_fixer()
 protein_prep()
