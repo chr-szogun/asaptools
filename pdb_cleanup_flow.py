@@ -33,7 +33,8 @@ class complex_aligner():
 
     def align_all_complexes(self,ref:str):
         for pdb in glob.glob("*_model_0.pdb"):
-            ref_pdb = "_".join(pdb.split()[:1][2:])
+            ligname = pdb.split("_")[2]
+            ref_pdb = pdb.replace(ligname, ref)
             self.align_to_ref(pdb, ref_pdb)
 
 
@@ -137,7 +138,7 @@ class SDF_writer():
     def __init__(self):
         self.json_to_sdf()
 
-    def json_to_sdf():
+    def json_to_sdf(self):
         sdfs = []
 
         for jsonfile in glob.glob("*.json"):
