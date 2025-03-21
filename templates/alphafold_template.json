@@ -1,0 +1,19 @@
+{
+  "name": "P38",
+  "sequences": [
+    {
+      "protein": {
+        "id": "A",
+        "sequence": "PROTEINFASTA"
+      }
+    },
+	{"ligand": {
+        	"id": "Z",
+        	"smiles": "LIGANDSMILES"
+      		}
+	}
+  ],
+  "modelSeeds": [42],
+  "dialect": "alphafold3",
+  "version": 1
+}
