@@ -53,8 +53,7 @@ class LigBondOrder_fixer():
                 elif line.startswith("CONECT"):
                     ligand_pdbblock += line
         ligand_3D = Chem.MolFromPDBBlock(ligand_pdbblock)
-        #smi = Chem.MolToSmiles(ligand_3D)
-        #ligand_2D = Chem.MolFromSmiles(smi)
+
         return ligand_3D
 
     def read_ligand_from_fasta(self,fasta_file)->Chem.rdchem.Mol:
@@ -109,46 +108,63 @@ class LigBondOrder_fixer():
 
     def main(self):
         for pdb in glob.glob(f"*aligned.pdb"):
-            ref_in = pdb.replace("_aligned.pdb",".fasta")
-            outname = pdb.replace(".pdb", "_fixedlig.pdb")
-            self.run_single(pdb, ref_in, outname)
+            try:
+                ref_in = pdb.replace("_aligned.pdb",".fasta")
+                outname = pdb.replace(".pdb", "_fixedlig.pdb")
+                self.run_single(pdb, ref_in, outname)
+
+            except FileNotFoundError:
+                ref_in = pdb.replace("_aligned.pdb",".json")
+                outname = pdb.replace(".pdb", "_fixedlig.pdb")
+                self.run_single(pdb, ref_in, outname)
 
 
 class protein_prep():
 
     def __init__(self, ref):
         self.ref = ref
+        self.liglist = []
+        self.pname = ""
 
         self.run_proteinprep(self.ref)
+
 
     def run_proteinprep(self, ref):
         for pdb in glob.glob("*aligned_fixedlig.pdb"):
             ligname = pdb.split("_")[-3]
             protname = pdb.split("_")[-4]
 
+            self.liglist.append(ligname)
+
             cplx = PreppedComplex.from_complex(Complex.from_pdb(pdb, target_kwargs={"target_name":protname},ligand_kwargs={"compound_name":ligname}))
             cplx.to_json_file(f"{protname}_{ligname}.json")
 
             if ligname == ref: #most potent
-                cplx.target.to_pdb_file(f"{protname}_boltz_raw.pdb") 
+                cplx.target.to_pdb_file(f"{protname}_mostpotent_prepped.pdb")
+
+        self.pname = protname
+        return self.pname, self.liglist
 
 
 class SDF_writer():
 
-    def __init__(self):
+    def __init__(self, pname, liglist):
+        self.pname = pname
+        self.liglist = liglist
         self.json_to_sdf()
 
     def json_to_sdf(self):
         sdfs = []
 
-        for jsonfile in glob.glob("*.json"):
+        for lig in self.liglist:
 
+            jsonfile = f"{self.pname}_{lig}.json"
             print(jsonfile)
             name = jsonfile.split("_")[1].split(".json")[0]
             with open(jsonfile,"r") as f:
                 sdf = json.load(f)["ligand"]["data"]
                 sdf = re.sub("LIG\(.*\)",name, sdf)  # I dont know why, but asapdiscovery keeps replacing the ligname with stuff like this
-                #sdf = sdf.replace("LIG(B-289)",name)
+                
                 sdfs.append(sdf)
 
         with open("allligs.sdf", "w+") as s:
@@ -158,5 +174,5 @@ class SDF_writer():
 os.chdir(args.pathtopdbs)
 complex_aligner(args.referenceligand)
 LigBondOrder_fixer()
-protein_prep(args.referenceligand)
-SDF_writer()
+pp = protein_prep(args.referenceligand)
+SDF_writer(pp.pname, pp.liglist)
