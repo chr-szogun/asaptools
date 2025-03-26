@@ -46,7 +46,7 @@ def write_chai_input(proteinseq,pname,ligsmiles,ligname):
     with open(f"chai_{pname}_{ligname}.fasta", "w+") as o:
         for i in range(len(proteinseq)):
             o.write(f">protein|name={pname}_{alphabet[i]}\n{proteinseq[i]}\n")
-        o.write(f">smiles|name={ligname}\n{ligsmiles}")
+        o.write(f">ligand|name={ligname}\n{ligsmiles}")
 
 
 def write_af_input(proteinseq,pname,ligsmiles,ligname):
